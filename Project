@@ -1,13 +1,43 @@
 import java.util.Scanner;
+import java.util.Map;
+import java.util.HashMap;
 
 public class Main {
+private static final Scanner scanner = new Scanner(System.in);
+private static final Map<String, Interger>foodCalories = new Hashmap<>();
+private static int waterIntake = 0;
+
  public static void main(String[}args{
- Scanner scanner = new Scanner(System.in);
- String name;
- int Water
- 
- System.out.println("Hackathon_Project");
- System.out.println("Daily_Health_Tracker");
+  boolean exit false:
+  
+  while (!exit){
+   System.out.println("Calorie Tracker Menu")
+   System.out.println("1. Log Water Intake");
+   System.out.println("2. Log Food Intake");
+   System.out.println("3. View Calorie Chart");
+   System.out.println("4. Exit");
+   System.out.println("Enter your choice:");
+   int choice =scanner.next.int();
+   
+   switch (choice) {
+    case1:
+      logWaterIntake();
+      break;
+    case2:
+      logFoodIntake();
+      break;
+    case3:
+      viewCalorieChart();
+      break;
+    case4: 
+      exit=true;
+      break;
+    default:
+     System.out.println("Invalid choice. Please try again.");     
+   }
+    
+   System.out.println();
+  }
 
  
  }
