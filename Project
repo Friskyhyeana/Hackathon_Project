@@ -7,10 +7,10 @@ private static final Scanner scanner = new Scanner(System.in);
 private static final Map<String, Interger>foodCalories = new Hashmap<>();
 private static int waterIntake = 0;
 
- public static void main(String[}args{
+ public static void main(String[]args) {
   boolean exit false:
   
-  while (!exit){
+  while (!exit) {
    System.out.println("Calorie Tracker Menu")
    System.out.println("1. Log Water Intake");
    System.out.println("2. Log Food Intake");
@@ -38,7 +38,42 @@ private static int waterIntake = 0;
     
    System.out.println();
   }
-
+ }
  
+ private static void logWaterIntake() {
+  System.out.print("Enter the amount of water in milliters :");
+  int waterAmount=scanner.nextInt();
+  scanner.nextLine();
+  
+  waterIntake += waterAmount;
+  System.out.println("Water intake logged successfully.");
+  } 
+  
+  private static void logFoodIntake() {
+   System.out.print("Enter the name of the food:");
+   String foodName = scanner.nextLine();
+   System.out.print("Enter the calories in the food: ");
+   int calories = scanner.nextInt();
+   scanner.nextLine();
+   
+  foodCalories.put(foodName,calories);
+  System.out.println("Food intake logged successfully.");
+}
+
+  private static void viewCalorieChart() {
+   System.out.println("CalorieChart");
+   System.out,println("---------");
+   
+   System.out.println("Water Intake: "+ waterIntake +" ml");
+   System.out.println("Food Intake:");
+   
+   if(foodCalories.is.Empty()) {
+      System.out.println("No food intake logged.");
+      } else {
+      for (Map.Entry<String, Interger> entry : foodCalories.entrySet()){
+          System.out.println(entry.getKey()+":"+ entry.get.Value() + "calories");
+     }
+   }
  }
 }
+
