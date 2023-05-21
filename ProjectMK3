@@ -1,0 +1,224 @@
+package com.example.hackathon_submission;
+
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+
+public class Main extends Application {
+    private static final int CALORIE_LIMIT = 2500;
+    private static final String BACKGROUND_COLOR = "-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #FF8C00, #FFA500);";
+
+    private static final Map<String, Food> foodItems = new HashMap<>();
+    private static final SimpleIntegerProperty calorieCount = new SimpleIntegerProperty(0);
+
+    private Label calorieLabel;
+    private XYChart.Series<Number, Number> calorieSeries;
+    private TextArea foodFactsTextArea;
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Food Intake Tracker");
+
+        BorderPane root = createRootPane();
+        Scene scene = new Scene(root, 600, 400);
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles.css")).toExternalForm());
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    private BorderPane createRootPane() {
+        BorderPane rootPane = new BorderPane();
+        rootPane.setStyle(BACKGROUND_COLOR);
+
+        HBox topBox = createTopBox();
+        VBox leftBox = createLeftBox();
+        VBox rightBox;
+        rightBox = createRightBox();
+        HBox bottomBox = createBottomBox();
+
+        rootPane.setTop(topBox);
+        rootPane.setLeft(leftBox);
+        rootPane.setRight(rightBox);
+        rootPane.setBottom(bottomBox);
+
+        return rootPane;
+    }
+
+    private HBox createTopBox() {
+        HBox topBox = new HBox();
+        topBox.setPadding(new Insets(10));
+        topBox.setAlignment(Pos.CENTER);
+
+        calorieLabel = new Label("Calories: 0");
+        calorieLabel.getStyleClass().add("calorie-label");
+
+        topBox.getChildren().add(calorieLabel);
+
+        return topBox;
+    }
+
+    private VBox createLeftBox() {
+        VBox leftBox = new VBox();
+        leftBox.setPadding(new Insets(10));
+        leftBox.setSpacing(10);
+
+        TextField foodNameField = new TextField();
+        foodNameField.setPromptText("Food Name");
+
+        TextField calorieField = new TextField();
+        calorieField.setPromptText("Calories");
+
+        Button addButton = new Button("Add Food");
+        addButton.setOnAction(e -> {
+            String foodName = foodNameField.getText().trim();
+            String calorieValue = calorieField.getText().trim();
+
+            if (!foodName.isEmpty() && !calorieValue.isEmpty()) {
+                try {
+                    int calories = Integer.parseInt(calorieValue);
+                    Food food = new Food(foodName, calories);
+                    foodItems.put(foodName, food);
+
+                    addDataToChart(foodName, calories);
+                    updateCalorieCount(calories);
+                    updateFoodFacts();
+
+                    foodNameField.clear();
+                    calorieField.clear();
+                } catch (NumberFormatException ex) {
+                    showAlert("Invalid calorie value! Please enter a valid number.");
+                }
+            } else {
+                showAlert("Please enter food name and calorie value.");
+            }
+        });
+
+        leftBox.getChildren().addAll(foodNameField, calorieField, addButton);
+
+        return leftBox;
+    }
+
+    private VBox createRightBox() {
+        VBox rightBox = new VBox();
+        rightBox.setPadding(new Insets(10));
+        rightBox.setSpacing(10);
+
+        LineChart<Number, Number> lineChart = createLineChart();
+
+        rightBox.getChildren().add(lineChart);
+
+        return rightBox;
+    }
+
+    private HBox createBottomBox() {
+        HBox bottomBox = new HBox();
+        bottomBox.setPadding(new Insets(10));
+        bottomBox.setAlignment(Pos.CENTER);
+
+        foodFactsTextArea = new TextArea();
+        foodFactsTextArea.setEditable(false);
+        foodFactsTextArea.setWrapText(true);
+
+        bottomBox.getChildren().add(foodFactsTextArea);
+
+        return bottomBox;
+    }
+
+    private LineChart<Number, Number> createLineChart() {
+        NumberAxis xAxis = new NumberAxis();
+        NumberAxis yAxis = new NumberAxis();
+        xAxis.setLabel("Time");
+        yAxis.setLabel("Calories");
+
+        calorieSeries = new XYChart.Series<>();
+        LineChart<Number, Number> chart = new LineChart<>(xAxis, yAxis);
+        chart.getData().add(calorieSeries);
+        chart.setLegendVisible(false);
+
+        return chart;
+    }
+
+    private void addDataToChart(String foodName, int calories) {
+        Platform.runLater(() -> {
+            XYChart.Data<Number, Number> dataPoint = new XYChart.Data<>(calorieSeries.getData().size() + 1, calorieCount.get());
+            calorieSeries.getData().add(dataPoint);
+
+            Tooltip tooltip = new Tooltip(foodName + ": " + calories + " calories");
+            Tooltip.install(dataPoint.getNode(), tooltip);
+        });
+    }
+
+    private void updateCalorieCount(int calories) {
+        Platform.runLater(() -> {
+            calorieCount.set(calorieCount.get() + calories);
+            calorieLabel.setText("Calories: " + calorieCount.get());
+
+            if (calorieCount.get() >= CALORIE_LIMIT) {
+                showAlert("You have reached the calorie limit!");
+            }
+        });
+    }
+
+    private void updateFoodFacts() {
+        Platform.runLater(() -> {
+            StringBuilder factsBuilder = new StringBuilder();
+
+            for (Map.Entry<String, Food> entry : foodItems.entrySet()) {
+                String foodName = entry.getKey();
+                Food food = entry.getValue();
+
+                factsBuilder.append(foodName).append(":\n");
+                factsBuilder.append("Calories: ").append(food.getCalories()).append("\n");
+                factsBuilder.append("Vitamin Facts: ").append(food.getVitaminFacts()).append("\n\n");
+            }
+
+            foodFactsTextArea.setText(factsBuilder.toString());
+        });
+    }
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Warning");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private static class Food {
+        private final SimpleIntegerProperty calories;
+
+        public Food(String name, int calories) {
+            new SimpleStringProperty(name);
+            this.calories = new SimpleIntegerProperty(calories);
+        }
+
+
+        public int getCalories() {
+            return calories.get();
+        }
+
+        public String getVitaminFacts() {
+
+            return "Vitamin A: 10 IU\nVitamin C: 5 mg";
+        }
+    }
+}
+
